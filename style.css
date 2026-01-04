@@ -12,6 +12,9 @@ body {
     padding: 20px;
     max-width: 1200px;
     margin: 0 auto;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
 }
 
 header {
@@ -34,6 +37,10 @@ h1 {
     opacity: 0.9;
     max-width: 700px;
     margin: 0 auto;
+}
+
+main {
+    flex: 1;
 }
 
 .container {
@@ -373,4 +380,14 @@ footer {
 
 .goal-completed .goal-amount {
     color: #27ae60;
+}
+
+/* Accessibility improvements */
+[aria-hidden="true"] {
+    display: none;
+}
+
+:focus {
+    outline: 2px solid #3498db;
+    outline-offset: 2px;
 }
