@@ -13,78 +13,80 @@
         <p class="subtitle">Отслеживайте свой прогресс в накоплении денег для достижения финансовых целей</p>
     </header>
     
-    <div class="container">
-        <div class="card">
-            <h2><i class="fas fa-plus-circle"></i> Добавить новую цель</h2>
-            <form id="goalForm">
-                <div class="form-group">
-                    <label for="goalName">Название цели</label>
-                    <input type="text" id="goalName" placeholder="Например: Новый ноутбук, отпуск, машина..." required>
+    <main>
+        <div class="container">
+            <section class="card">
+                <h2><i class="fas fa-plus-circle"></i> Добавить новую цель</h2>
+                <form id="goalForm">
+                    <div class="form-group">
+                        <label for="goalName">Название цели</label>
+                        <input type="text" id="goalName" placeholder="Например: Новый ноутбук, отпуск, машина..." required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="targetAmount">Целевая сумма (₽)</label>
+                        <input type="number" id="targetAmount" min="1" placeholder="100000" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="savedAmount">Уже накоплено (₽)</label>
+                        <input type="number" id="savedAmount" min="0" placeholder="0" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="priority">Приоритет</label>
+                        <select id="priority">
+                            <option value="low">Низкий</option>
+                            <option value="medium" selected>Средний</option>
+                            <option value="high">Высокий</option>
+                        </select>
+                    </div>
+                    
+                    <button type="submit" id="addGoalBtn">
+                        <i class="fas fa-plus"></i> Добавить цель
+                    </button>
+                </form>
+            </section>
+            
+            <section class="card">
+                <h2><i class="fas fa-bullseye"></i> Мои цели</h2>
+                <div id="goalsList">
+                    <div class="empty-state" id="emptyState">
+                        <i class="fas fa-bullseye" aria-hidden="true"></i>
+                        <h3>У вас пока нет целей</h3>
+                        <p>Добавьте свою первую цель, чтобы начать отслеживать прогресс накопления</p>
+                    </div>
                 </div>
-                
-                <div class="form-group">
-                    <label for="targetAmount">Целевая сумма (₽)</label>
-                    <input type="number" id="targetAmount" min="1" placeholder="100000" required>
-                </div>
-                
-                <div class="form-group">
-                    <label for="savedAmount">Уже накоплено (₽)</label>
-                    <input type="number" id="savedAmount" min="0" placeholder="0" required>
-                </div>
-                
-                <div class="form-group">
-                    <label for="priority">Приоритет</label>
-                    <select id="priority">
-                        <option value="low">Низкий</option>
-                        <option value="medium" selected>Средний</option>
-                        <option value="high">Высокий</option>
-                    </select>
-                </div>
-                
-                <button type="submit" id="addGoalBtn">
-                    <i class="fas fa-plus"></i> Добавить цель
-                </button>
-            </form>
+            </section>
         </div>
         
-        <div class="card">
-            <h2><i class="fas fa-bullseye"></i> Мои цели</h2>
-            <div id="goalsList">
-                <div class="empty-state" id="emptyState">
-                    <i class="fas fa-bullseye"></i>
-                    <h3>У вас пока нет целей</h3>
-                    <p>Добавьте свою первую цель, чтобы начать отслеживать прогресс накопления</p>
-                </div>
+        <section class="stats">
+            <div class="stat-box">
+                <div class="stat-value" id="totalGoals">0</div>
+                <div class="stat-label">Всего целей</div>
             </div>
-        </div>
-    </div>
-    
-    <div class="stats">
-        <div class="stat-box">
-            <div class="stat-value" id="totalGoals">0</div>
-            <div class="stat-label">Всего целей</div>
-        </div>
-        
-        <div class="stat-box">
-            <div class="stat-value"><span class="total-saved" id="totalSaved">0 ₽</span></div>
-            <div class="stat-label">Всего накоплено</div>
-        </div>
-        
-        <div class="stat-box">
-            <div class="stat-value"><span class="total-remaining" id="totalRemaining">0 ₽</span></div>
-            <div class="stat-label">Осталось накопить</div>
-        </div>
-        
-        <div class="stat-box">
-            <div class="stat-value" id="completedGoals">0</div>
-            <div class="stat-label">Достигнуто целей</div>
-        </div>
-    </div>
+            
+            <div class="stat-box">
+                <div class="stat-value"><span class="total-saved" id="totalSaved">0 ₽</span></div>
+                <div class="stat-label">Всего накоплено</div>
+            </div>
+            
+            <div class="stat-box">
+                <div class="stat-value"><span class="total-remaining" id="totalRemaining">0 ₽</span></div>
+                <div class="stat-label">Осталось накопить</div>
+            </div>
+            
+            <div class="stat-box">
+                <div class="stat-value" id="completedGoals">0</div>
+                <div class="stat-label">Достигнуто целей</div>
+            </div>
+        </section>
+    </main>
     
     <!-- Модальное окно для подтверждения удаления -->
-    <div class="modal" id="deleteModal">
+    <div class="modal" id="deleteModal" role="dialog" aria-labelledby="deleteModalTitle" aria-hidden="true">
         <div class="modal-content">
-            <h3 class="modal-title">Подтверждение удаления</h3>
+            <h3 class="modal-title" id="deleteModalTitle">Подтверждение удаления</h3>
             <p id="deleteModalText">Вы уверены, что хотите удалить эту цель?</p>
             <div class="modal-buttons">
                 <button class="modal-btn confirm delete" id="confirmDeleteBtn">Удалить</button>
@@ -94,9 +96,9 @@
     </div>
     
     <!-- Модальное окно для добавления средств -->
-    <div class="modal" id="addMoneyModal">
+    <div class="modal" id="addMoneyModal" role="dialog" aria-labelledby="addMoneyModalTitle" aria-hidden="true">
         <div class="modal-content">
-            <h3 class="modal-title">Добавить средства</h3>
+            <h3 class="modal-title" id="addMoneyModalTitle">Добавить средства</h3>
             <div class="form-group">
                 <label for="addMoneyInput">Сумма для добавления (₽)</label>
                 <input type="number" id="addMoneyInput" min="1" placeholder="1000" required>
@@ -109,9 +111,9 @@
     </div>
     
     <!-- Модальное окно для редактирования цели -->
-    <div class="modal" id="editGoalModal">
+    <div class="modal" id="editGoalModal" role="dialog" aria-labelledby="editGoalModalTitle" aria-hidden="true">
         <div class="modal-content">
-            <h3 class="modal-title">Редактировать цель</h3>
+            <h3 class="modal-title" id="editGoalModalTitle">Редактировать цель</h3>
             <div class="form-group">
                 <label for="editGoalName">Название цели</label>
                 <input type="text" id="editGoalName" required>
