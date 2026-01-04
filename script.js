@@ -10,7 +10,6 @@ const SavingsApp = {
         this.setupModals();
         this.updateStats();
         this.setCurrentYear();
-        this.renderGoals();
         
         if (this.goals.length === 0) {
             this.addExampleGoals();
@@ -21,173 +20,99 @@ const SavingsApp = {
     loadGoals() {
         const savedGoals = localStorage.getItem('savingsGoals');
         if (savedGoals) {
-            try {
-                this.goals = JSON.parse(savedGoals);
-            } catch (error) {
-                console.error('Ошибка загрузки целей:', error);
-                this.goals = [];
-            }
+            this.goals = JSON.parse(savedGoals);
         }
     },
     
     // Сохранение целей в localStorage
     saveGoals() {
-        try {
-            localStorage.setItem('savingsGoals', JSON.stringify(this.goals));
-        } catch (error) {
-            console.error('Ошибка сохранения целей:', error);
-        }
+        localStorage.setItem('savingsGoals', JSON.stringify(this.goals));
     },
     
     // Установка текущего года в футере
     setCurrentYear() {
-        const yearElement = document.getElementById('currentYear');
-        if (yearElement) {
-            yearElement.textContent = new Date().getFullYear();
-        }
+        document.getElementById('currentYear').textContent = new Date().getFullYear();
     },
     
     // Настройка обработчиков событий
     setupEventListeners() {
         // Форма добавления цели
         const goalForm = document.getElementById('goalForm');
-        if (goalForm) {
-            goalForm.addEventListener('submit', (e) => {
-                e.preventDefault();
-                this.handleAddGoal();
-            });
-        }
+        goalForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            this.handleAddGoal();
+        });
         
         // Используем делегирование событий для кнопок целей
         const goalsList = document.getElementById('goalsList');
-        if (goalsList) {
-            goalsList.addEventListener('click', (e) => {
-                const button = e.target.closest('button');
-                if (!button) return;
-                
-                const goalId = parseInt(button.getAttribute('data-id'));
-                if (!goalId) return;
-                
-                if (button.classList.contains('add-btn')) {
-                    this.openAddMoneyModal(goalId);
-                } else if (button.classList.contains('update-btn')) {
-                    this.openEditGoalModal(goalId);
-                } else if (button.classList.contains('delete-btn')) {
-                    this.openDeleteModal(goalId);
-                }
-            });
-        }
+        goalsList.addEventListener('click', (e) => {
+            const button = e.target.closest('button');
+            if (!button) return;
+            
+            const goalId = parseInt(button.getAttribute('data-id'));
+            if (!goalId) return;
+            
+            if (button.classList.contains('add-btn')) {
+                this.openAddMoneyModal(goalId);
+            } else if (button.classList.contains('update-btn')) {
+                this.openEditGoalModal(goalId);
+            } else if (button.classList.contains('delete-btn')) {
+                this.openDeleteModal(goalId);
+            }
+        });
     },
     
     // Настройка модальных окон
     setupModals() {
         // Модальное окно удаления
         const deleteModal = document.getElementById('deleteModal');
-        const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
-        const cancelDeleteBtn = document.getElementById('cancelDeleteBtn');
-        
-        if (confirmDeleteBtn) {
-            confirmDeleteBtn.addEventListener('click', () => {
-                this.confirmDeleteGoal();
-            });
-        }
-        
-        if (cancelDeleteBtn) {
-            cancelDeleteBtn.addEventListener('click', () => {
-                this.closeModal('deleteModal');
-            });
-        }
-        
-        if (deleteModal) {
-            deleteModal.addEventListener('click', (e) => {
-                if (e.target === deleteModal) {
-                    this.closeModal('deleteModal');
-                }
-            });
-        }
+        document.getElementById('confirmDeleteBtn').addEventListener('click', () => {
+            this.confirmDeleteGoal();
+        });
+        document.getElementById('cancelDeleteBtn').addEventListener('click', () => {
+            deleteModal.style.display = 'none';
+        });
+        deleteModal.addEventListener('click', (e) => {
+            if (e.target === deleteModal) {
+                deleteModal.style.display = 'none';
+            }
+        });
         
         // Модальное окно добавления средств
         const addMoneyModal = document.getElementById('addMoneyModal');
-        const confirmAddMoneyBtn = document.getElementById('confirmAddMoneyBtn');
-        const cancelAddMoneyBtn = document.getElementById('cancelAddMoneyBtn');
-        
-        if (confirmAddMoneyBtn) {
-            confirmAddMoneyBtn.addEventListener('click', () => {
-                this.confirmAddMoney();
-            });
-        }
-        
-        if (cancelAddMoneyBtn) {
-            cancelAddMoneyBtn.addEventListener('click', () => {
-                this.closeModal('addMoneyModal');
-            });
-        }
-        
-        if (addMoneyModal) {
-            addMoneyModal.addEventListener('click', (e) => {
-                if (e.target === addMoneyModal) {
-                    this.closeModal('addMoneyModal');
-                }
-            });
-        }
+        document.getElementById('confirmAddMoneyBtn').addEventListener('click', () => {
+            this.confirmAddMoney();
+        });
+        document.getElementById('cancelAddMoneyBtn').addEventListener('click', () => {
+            addMoneyModal.style.display = 'none';
+        });
+        addMoneyModal.addEventListener('click', (e) => {
+            if (e.target === addMoneyModal) {
+                addMoneyModal.style.display = 'none';
+            }
+        });
         
         // Модальное окно редактирования цели
         const editGoalModal = document.getElementById('editGoalModal');
-        const confirmEditGoalBtn = document.getElementById('confirmEditGoalBtn');
-        const cancelEditGoalBtn = document.getElementById('cancelEditGoalBtn');
-        
-        if (confirmEditGoalBtn) {
-            confirmEditGoalBtn.addEventListener('click', () => {
-                this.confirmEditGoal();
-            });
-        }
-        
-        if (cancelEditGoalBtn) {
-            cancelEditGoalBtn.addEventListener('click', () => {
-                this.closeModal('editGoalModal');
-            });
-        }
-        
-        if (editGoalModal) {
-            editGoalModal.addEventListener('click', (e) => {
-                if (e.target === editGoalModal) {
-                    this.closeModal('editGoalModal');
-                }
-            });
-        }
-    },
-    
-    // Закрытие модального окна
-    closeModal(modalId) {
-        const modal = document.getElementById(modalId);
-        if (modal) {
-            modal.style.display = 'none';
-            modal.setAttribute('aria-hidden', 'true');
-        }
-    },
-    
-    // Открытие модального окна
-    openModal(modalId) {
-        const modal = document.getElementById(modalId);
-        if (modal) {
-            modal.style.display = 'flex';
-            modal.setAttribute('aria-hidden', 'false');
-        }
+        document.getElementById('confirmEditGoalBtn').addEventListener('click', () => {
+            this.confirmEditGoal();
+        });
+        document.getElementById('cancelEditGoalBtn').addEventListener('click', () => {
+            editGoalModal.style.display = 'none';
+        });
+        editGoalModal.addEventListener('click', (e) => {
+            if (e.target === editGoalModal) {
+                editGoalModal.style.display = 'none';
+            }
+        });
     },
     
     // Обработка добавления новой цели
     handleAddGoal() {
-        const nameInput = document.getElementById('goalName');
-        const targetInput = document.getElementById('targetAmount');
-        const savedInput = document.getElementById('savedAmount');
-        const prioritySelect = document.getElementById('priority');
-        
-        if (!nameInput || !targetInput || !savedInput || !prioritySelect) return;
-        
-        const name = nameInput.value.trim();
-        const target = parseFloat(targetInput.value);
-        const saved = parseFloat(savedInput.value);
-        const priority = prioritySelect.value;
+        const name = document.getElementById('goalName').value.trim();
+        const target = parseFloat(document.getElementById('targetAmount').value);
+        const saved = parseFloat(document.getElementById('savedAmount').value);
+        const priority = document.getElementById('priority').value;
         
         // Валидация
         if (!name) {
@@ -240,20 +165,14 @@ const SavingsApp = {
         const goalsList = document.getElementById('goalsList');
         const emptyState = document.getElementById('emptyState');
         
-        if (!goalsList) return;
-        
         if (this.goals.length === 0) {
-            if (emptyState) {
-                goalsList.innerHTML = '';
-                goalsList.appendChild(emptyState);
-                emptyState.style.display = 'block';
-            }
+            goalsList.innerHTML = '';
+            goalsList.appendChild(emptyState);
+            emptyState.style.display = 'block';
             return;
         }
         
-        if (emptyState) {
-            emptyState.style.display = 'none';
-        }
+        emptyState.style.display = 'none';
         
         // Сортируем цели по приоритету
         const priorityOrder = { high: 3, medium: 2, low: 1 };
@@ -273,7 +192,7 @@ const SavingsApp = {
             goalsHTML += `
                 <div class="goal-item ${isCompleted ? 'goal-completed' : ''}" data-id="${goal.id}">
                     <div class="goal-header">
-                        <div class="goal-title">${this.escapeHtml(goal.name)}</div>
+                        <div class="goal-title">${goal.name}</div>
                         <div class="goal-amount">${goal.saved.toLocaleString()} ₽ / ${goal.target.toLocaleString()} ₽</div>
                     </div>
                     
@@ -292,13 +211,13 @@ const SavingsApp = {
                     
                     <div class="actions">
                         <button class="add-btn" data-id="${goal.id}">
-                            <i class="fas fa-plus" aria-hidden="true"></i> Добавить
+                            <i class="fas fa-plus"></i> Добавить
                         </button>
                         <button class="update-btn" data-id="${goal.id}">
-                            <i class="fas fa-edit" aria-hidden="true"></i> Редактировать
+                            <i class="fas fa-edit"></i> Редактировать
                         </button>
                         <button class="delete-btn" data-id="${goal.id}">
-                            <i class="fas fa-trash" aria-hidden="true"></i> Удалить
+                            <i class="fas fa-trash"></i> Удалить
                         </button>
                     </div>
                 </div>
@@ -306,13 +225,6 @@ const SavingsApp = {
         });
         
         goalsList.innerHTML = goalsHTML;
-    },
-    
-    // Экранирование HTML для безопасности
-    escapeHtml(text) {
-        const div = document.createElement('div');
-        div.textContent = text;
-        return div.innerHTML;
     },
     
     // Получение текста приоритета
@@ -331,12 +243,8 @@ const SavingsApp = {
         if (!goal) return;
         
         this.currentGoalId = goalId;
-        const addMoneyInput = document.getElementById('addMoneyInput');
-        if (addMoneyInput) {
-            addMoneyInput.value = '';
-            addMoneyInput.focus();
-        }
-        this.openModal('addMoneyModal');
+        document.getElementById('addMoneyInput').value = '';
+        document.getElementById('addMoneyModal').style.display = 'flex';
     },
     
     // Подтверждение добавления средств
@@ -344,8 +252,6 @@ const SavingsApp = {
         if (!this.currentGoalId) return;
         
         const amountInput = document.getElementById('addMoneyInput');
-        if (!amountInput) return;
-        
         const amount = parseFloat(amountInput.value);
         
         if (isNaN(amount) || amount <= 0) {
@@ -364,7 +270,7 @@ const SavingsApp = {
         }
         
         // Закрываем модальное окно
-        this.closeModal('addMoneyModal');
+        document.getElementById('addMoneyModal').style.display = 'none';
         
         // Обновляем интерфейс
         this.renderGoals();
@@ -384,27 +290,22 @@ const SavingsApp = {
         this.currentGoalId = goalId;
         
         // Заполняем форму данными цели
-        const editGoalName = document.getElementById('editGoalName');
-        const editTargetAmount = document.getElementById('editTargetAmount');
-        const editSavedAmount = document.getElementById('editSavedAmount');
-        const editPriority = document.getElementById('editPriority');
+        document.getElementById('editGoalName').value = goal.name;
+        document.getElementById('editTargetAmount').value = goal.target;
+        document.getElementById('editSavedAmount').value = goal.saved;
+        document.getElementById('editPriority').value = goal.priority;
         
-        if (editGoalName) editGoalName.value = goal.name;
-        if (editTargetAmount) editTargetAmount.value = goal.target;
-        if (editSavedAmount) editSavedAmount.value = goal.saved;
-        if (editPriority) editPriority.value = goal.priority;
-        
-        this.openModal('editGoalModal');
+        document.getElementById('editGoalModal').style.display = 'flex';
     },
     
     // Подтверждение редактирования цели
     confirmEditGoal() {
         if (!this.currentGoalId) return;
         
-        const name = document.getElementById('editGoalName')?.value.trim();
-        const target = parseFloat(document.getElementById('editTargetAmount')?.value);
-        const saved = parseFloat(document.getElementById('editSavedAmount')?.value);
-        const priority = document.getElementById('editPriority')?.value;
+        const name = document.getElementById('editGoalName').value.trim();
+        const target = parseFloat(document.getElementById('editTargetAmount').value);
+        const saved = parseFloat(document.getElementById('editSavedAmount').value);
+        const priority = document.getElementById('editPriority').value;
         
         // Валидация
         if (!name) {
@@ -440,7 +341,7 @@ const SavingsApp = {
         };
         
         // Закрываем модальное окно
-        this.closeModal('editGoalModal');
+        document.getElementById('editGoalModal').style.display = 'none';
         
         // Обновляем интерфейс
         this.renderGoals();
@@ -458,11 +359,9 @@ const SavingsApp = {
         if (!goal) return;
         
         this.currentGoalId = goalId;
-        const deleteModalText = document.getElementById('deleteModalText');
-        if (deleteModalText) {
-            deleteModalText.textContent = `Вы уверены, что хотите удалить цель "${goal.name}"?`;
-        }
-        this.openModal('deleteModal');
+        document.getElementById('deleteModalText').textContent = 
+            `Вы уверены, что хотите удалить цель "${goal.name}"?`;
+        document.getElementById('deleteModal').style.display = 'flex';
     },
     
     // Подтверждение удаления цели
@@ -478,7 +377,7 @@ const SavingsApp = {
         this.goals.splice(goalIndex, 1);
         
         // Закрываем модальное окно
-        this.closeModal('deleteModal');
+        document.getElementById('deleteModal').style.display = 'none';
         
         // Обновляем интерфейс
         this.renderGoals();
@@ -498,15 +397,10 @@ const SavingsApp = {
         const totalRemaining = totalTarget - totalSaved;
         const completedGoals = this.goals.filter(goal => goal.saved >= goal.target).length;
         
-        const totalGoalsElement = document.getElementById('totalGoals');
-        const totalSavedElement = document.getElementById('totalSaved');
-        const totalRemainingElement = document.getElementById('totalRemaining');
-        const completedGoalsElement = document.getElementById('completedGoals');
-        
-        if (totalGoalsElement) totalGoalsElement.textContent = totalGoals;
-        if (totalSavedElement) totalSavedElement.textContent = `${totalSaved.toLocaleString()} ₽`;
-        if (totalRemainingElement) totalRemainingElement.textContent = `${totalRemaining.toLocaleString()} ₽`;
-        if (completedGoalsElement) completedGoalsElement.textContent = completedGoals;
+        document.getElementById('totalGoals').textContent = totalGoals;
+        document.getElementById('totalSaved').textContent = `${totalSaved.toLocaleString()} ₽`;
+        document.getElementById('totalRemaining').textContent = `${totalRemaining.toLocaleString()} ₽`;
+        document.getElementById('completedGoals').textContent = completedGoals;
     },
     
     // Показать уведомление
@@ -514,8 +408,6 @@ const SavingsApp = {
         const notification = document.createElement('div');
         notification.className = `custom-notification ${type}`;
         notification.textContent = message;
-        notification.setAttribute('role', 'alert');
-        notification.setAttribute('aria-live', 'assertive');
         
         document.body.appendChild(notification);
         
