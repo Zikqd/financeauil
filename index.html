@@ -118,7 +118,6 @@
             font-size: 16px;
             font-weight: 600;
             transition: background 0.3s;
-            width: 100%;
         }
         
         button:hover {
@@ -185,7 +184,7 @@
             margin-top: 15px;
         }
         
-        .add-btn, .update-btn {
+        .add-btn, .update-btn, .delete-btn {
             flex: 1;
             padding: 10px;
             font-size: 0.9rem;
@@ -209,10 +208,6 @@
         
         .delete-btn {
             background: #e74c3c;
-            width: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
         }
         
         .delete-btn:hover {
@@ -277,6 +272,95 @@
         .total-remaining {
             color: #e74c3c;
             font-weight: bold;
+        }
+        
+        /* Стили для кастомного уведомления */
+        .custom-notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #2ecc71;
+            color: white;
+            padding: 15px 20px;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+            font-weight: 600;
+            animation: slideIn 0.3s ease;
+            max-width: 300px;
+        }
+        
+        .custom-notification.error {
+            background: #e74c3c;
+        }
+        
+        .custom-notification.warning {
+            background: #f39c12;
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        @keyframes slideOut {
+            from { transform: translateX(0); opacity: 1; }
+            to { transform: translateX(100%); opacity: 0; }
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1001;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal-content {
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            max-width: 400px;
+            width: 90%;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+        }
+        
+        .modal-title {
+            margin-bottom: 20px;
+            color: #2c3e50;
+            font-size: 1.5rem;
+        }
+        
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .modal-btn {
+            flex: 1;
+            padding: 10px;
+        }
+        
+        .modal-btn.confirm {
+            background: #e74c3c;
+        }
+        
+        .modal-btn.confirm:hover {
+            background: #c0392b;
+        }
+        
+        .modal-btn.cancel {
+            background: #95a5a6;
+        }
+        
+        .modal-btn.cancel:hover {
+            background: #7f8c8d;
         }
     </style>
 </head>
@@ -355,6 +439,18 @@
         </div>
     </div>
     
+    <!-- Модальное окно для подтверждения удаления -->
+    <div class="modal" id="deleteModal">
+        <div class="modal-content">
+            <h3 class="modal-title">Подтверждение удаления</h3>
+            <p id="deleteModalText">Вы уверены, что хотите удалить эту цель?</p>
+            <div class="modal-buttons">
+                <button class="modal-btn confirm" id="confirmDeleteBtn">Удалить</button>
+                <button class="modal-btn cancel" id="cancelDeleteBtn">Отмена</button>
+            </div>
+        </div>
+    </div>
+    
     <footer>
         <p>Трекер накопления денег для целей &copy; <span id="currentYear"></span> | Сохраняйте и достигайте своих финансовых целей!</p>
     </footer>
@@ -365,6 +461,13 @@
         
         // Загрузка целей из localStorage
         let goals = JSON.parse(localStorage.getItem('savingsGoals')) || [];
+        
+        // Переменные для управления модальным окном удаления
+        let goalToDeleteIndex = null;
+        const deleteModal = document.getElementById('deleteModal');
+        const deleteModalText = document.getElementById('deleteModalText');
+        const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+        const cancelDeleteBtn = document.getElementById('cancelDeleteBtn');
         
         // Обновление статистики
         function updateStats() {
@@ -401,6 +504,7 @@
             goalsList.innerHTML = '';
             
             sortedGoals.forEach((goal, index) => {
+                const originalIndex = goals.findIndex(g => g.name === goal.name && g.target === goal.target);
                 const percentage = Math.min(Math.round((goal.saved / goal.target) * 100), 100);
                 const progressColor = percentage >= 100 ? '#2ecc71' : 
                                      percentage >= 50 ? '#3498db' : 
@@ -426,19 +530,41 @@
                     </div>
                     
                     <div class="actions">
-                        <button class="add-btn" onclick="addToGoal(${index})">
+                        <button class="add-btn" data-index="${originalIndex}">
                             <i class="fas fa-plus"></i> Добавить
                         </button>
-                        <button class="update-btn" onclick="updateGoal(${index})">
+                        <button class="update-btn" data-index="${originalIndex}">
                             <i class="fas fa-edit"></i> Обновить
                         </button>
-                        <button class="delete-btn" onclick="deleteGoal(${index})">
-                            <i class="fas fa-trash"></i>
+                        <button class="delete-btn" data-index="${originalIndex}">
+                            <i class="fas fa-trash"></i> Удалить
                         </button>
                     </div>
                 `;
                 
                 goalsList.appendChild(goalElement);
+            });
+            
+            // Добавляем обработчики событий для кнопок
+            document.querySelectorAll('.add-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const index = parseInt(this.getAttribute('data-index'));
+                    addToGoal(index);
+                });
+            });
+            
+            document.querySelectorAll('.update-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const index = parseInt(this.getAttribute('data-index'));
+                    updateGoal(index);
+                });
+            });
+            
+            document.querySelectorAll('.delete-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const index = parseInt(this.getAttribute('data-index'));
+                    showDeleteModal(index);
+                });
             });
             
             updateStats();
@@ -464,8 +590,23 @@
             const saved = parseFloat(document.getElementById('savedAmount').value);
             const priority = document.getElementById('priority').value;
             
+            if (!name) {
+                showCustomNotification('Введите название цели!', 'error');
+                return;
+            }
+            
+            if (isNaN(target) || target <= 0) {
+                showCustomNotification('Введите корректную целевую сумму!', 'error');
+                return;
+            }
+            
+            if (isNaN(saved) || saved < 0) {
+                showCustomNotification('Введите корректную сумму накоплений!', 'error');
+                return;
+            }
+            
             if (saved > target) {
-                alert('Накопленная сумма не может превышать целевую!');
+                showCustomNotification('Накопленная сумма не может превышать целевую!', 'error');
                 return;
             }
             
@@ -481,27 +622,31 @@
             document.getElementById('priority').value = 'medium';
             
             renderGoals();
-            
-            // Показ уведомления
-            showNotification(`Цель "${name}" успешно добавлена!`);
+            showCustomNotification(`Цель "${name}" успешно добавлена!`);
         });
         
         // Добавление средств к цели
         function addToGoal(index) {
-            const amount = prompt(`Сколько рублей вы хотите добавить к цели "${goals[index].name}"?`, "0");
-            const numAmount = parseFloat(amount);
+            const amountInput = prompt(`Сколько рублей вы хотите добавить к цели "${goals[index].name}"?`, "0");
             
-            if (amount && !isNaN(numAmount) && numAmount > 0) {
-                goals[index].saved += numAmount;
-                
-                // Если накопленная сумма превысила целевую, ограничиваем её
-                if (goals[index].saved > goals[index].target) {
-                    goals[index].saved = goals[index].target;
-                }
-                
-                renderGoals();
-                showNotification(`Добавлено ${numAmount.toLocaleString()} ₽ к цели "${goals[index].name}"`);
+            if (amountInput === null) return;
+            
+            const amount = parseFloat(amountInput);
+            
+            if (isNaN(amount) || amount <= 0) {
+                showCustomNotification('Пожалуйста, введите корректную сумму!', 'error');
+                return;
             }
+            
+            goals[index].saved += amount;
+            
+            // Если накопленная сумма превысила целевую, ограничиваем её
+            if (goals[index].saved > goals[index].target) {
+                goals[index].saved = goals[index].target;
+            }
+            
+            renderGoals();
+            showCustomNotification(`Добавлено ${amount.toLocaleString()} ₽ к цели "${goals[index].name}"`);
         }
         
         // Обновление цели
@@ -509,58 +654,78 @@
             const goal = goals[index];
             
             const newName = prompt('Новое название цели:', goal.name);
-            if (newName === null) return;
+            if (newName === null || newName.trim() === '') return;
             
-            const newTarget = prompt('Новая целевая сумма (₽):', goal.target);
-            if (newTarget === null) return;
+            const newTargetInput = prompt('Новая целевая сумма (₽):', goal.target);
+            if (newTargetInput === null) return;
             
-            const newSaved = prompt('Уже накоплено (₽):', goal.saved);
-            if (newSaved === null) return;
+            const newSavedInput = prompt('Уже накоплено (₽):', goal.saved);
+            if (newSavedInput === null) return;
             
-            const numTarget = parseFloat(newTarget);
-            const numSaved = parseFloat(newSaved);
+            const newTarget = parseFloat(newTargetInput);
+            const newSaved = parseFloat(newSavedInput);
             
-            if (numSaved > numTarget) {
-                alert('Накопленная сумма не может превышать целевую!');
+            if (isNaN(newTarget) || newTarget <= 0) {
+                showCustomNotification('Введите корректную целевую сумму!', 'error');
+                return;
+            }
+            
+            if (isNaN(newSaved) || newSaved < 0) {
+                showCustomNotification('Введите корректную сумму накоплений!', 'error');
+                return;
+            }
+            
+            if (newSaved > newTarget) {
+                showCustomNotification('Накопленная сумма не может превышать целевую!', 'error');
                 return;
             }
             
             goals[index].name = newName.trim();
-            goals[index].target = numTarget;
-            goals[index].saved = numSaved;
+            goals[index].target = newTarget;
+            goals[index].saved = newSaved;
             
             renderGoals();
-            showNotification(`Цель "${goal.name}" обновлена`);
+            showCustomNotification(`Цель "${goal.name}" обновлена`);
         }
         
-        // Удаление цели
-        function deleteGoal(index) {
-            const goalName = goals[index].name;
-            if (confirm(`Вы уверены, что хотите удалить цель "${goalName}"?`)) {
-                goals.splice(index, 1);
+        // Показать модальное окно для подтверждения удаления
+        function showDeleteModal(index) {
+            goalToDeleteIndex = index;
+            deleteModalText.textContent = `Вы уверены, что хотите удалить цель "${goals[index].name}"?`;
+            deleteModal.style.display = 'flex';
+        }
+        
+        // Удаление цели после подтверждения
+        confirmDeleteBtn.addEventListener('click', function() {
+            if (goalToDeleteIndex !== null) {
+                const goalName = goals[goalToDeleteIndex].name;
+                goals.splice(goalToDeleteIndex, 1);
+                goalToDeleteIndex = null;
+                deleteModal.style.display = 'none';
                 renderGoals();
-                showNotification(`Цель "${goalName}" удалена`);
+                showCustomNotification(`Цель "${goalName}" удалена`);
             }
-        }
+        });
         
-        // Показать уведомление
-        function showNotification(message) {
-            // Создаем элемент уведомления
+        // Отмена удаления
+        cancelDeleteBtn.addEventListener('click', function() {
+            goalToDeleteIndex = null;
+            deleteModal.style.display = 'none';
+        });
+        
+        // Закрытие модального окна при клике вне его
+        deleteModal.addEventListener('click', function(e) {
+            if (e.target === deleteModal) {
+                goalToDeleteIndex = null;
+                deleteModal.style.display = 'none';
+            }
+        });
+        
+        // Показать кастомное уведомление (без использования alert)
+        function showCustomNotification(message, type = 'success') {
             const notification = document.createElement('div');
+            notification.className = `custom-notification ${type}`;
             notification.textContent = message;
-            notification.style.cssText = `
-                position: fixed;
-                top: 20px;
-                right: 20px;
-                background: #2ecc71;
-                color: white;
-                padding: 15px 20px;
-                border-radius: 8px;
-                box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-                z-index: 1000;
-                font-weight: 600;
-                animation: slideIn 0.3s ease;
-            `;
             
             document.body.appendChild(notification);
             
@@ -568,26 +733,11 @@
             setTimeout(() => {
                 notification.style.animation = 'slideOut 0.3s ease';
                 setTimeout(() => {
-                    document.body.removeChild(notification);
+                    if (notification.parentNode) {
+                        notification.parentNode.removeChild(notification);
+                    }
                 }, 300);
             }, 3000);
-            
-            // Добавляем CSS анимации
-            if (!document.querySelector('#notification-styles')) {
-                const style = document.createElement('style');
-                style.id = 'notification-styles';
-                style.textContent = `
-                    @keyframes slideIn {
-                        from { transform: translateX(100%); opacity: 0; }
-                        to { transform: translateX(0); opacity: 1; }
-                    }
-                    @keyframes slideOut {
-                        from { transform: translateX(0); opacity: 1; }
-                        to { transform: translateX(100%); opacity: 0; }
-                    }
-                `;
-                document.head.appendChild(style);
-            }
         }
         
         // Сохранение целей в localStorage
