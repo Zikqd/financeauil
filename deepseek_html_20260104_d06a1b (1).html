@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Трекер накопления денег для целей</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            padding: 30px 0;
+            background: linear-gradient(135deg, #2c3e50, #4a6491);
+            color: white;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1 {
+            font-size: 2.8rem;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+        
+        .container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            transition: transform 0.3s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .card h2 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f0f0f0;
+            display: flex;
+            align-items: center;
+        }
+        
+        .card h2 i {
+            margin-right: 10px;
+            color: #3498db;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #444;
+        }
+        
+        input, select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        input:focus, select:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+        
+        button {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 14px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: background 0.3s;
+            width: 100%;
+        }
+        
+        button:hover {
+            background: #2980b9;
+        }
+        
+        .goal-item {
+            background: #f9f9f9;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-left: 5px solid #3498db;
+        }
+        
+        .goal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .goal-title {
+            font-weight: 700;
+            font-size: 1.2rem;
+            color: #2c3e50;
+        }
+        
+        .goal-amount {
+            font-weight: 700;
+            color: #3498db;
+        }
+        
+        .progress-container {
+            height: 20px;
+            background-color: #ecf0f1;
+            border-radius: 10px;
+            margin: 15px 0;
+            overflow: hidden;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #2ecc71, #1abc9c);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 0.85rem;
+            transition: width 0.5s ease;
+        }
+        
+        .goal-info {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.9rem;
+            color: #666;
+        }
+        
+        .actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .add-btn, .update-btn {
+            flex: 1;
+            padding: 10px;
+            font-size: 0.9rem;
+        }
+        
+        .add-btn {
+            background: #2ecc71;
+        }
+        
+        .add-btn:hover {
+            background: #27ae60;
+        }
+        
+        .update-btn {
+            background: #f39c12;
+        }
+        
+        .update-btn:hover {
+            background: #d35400;
+        }
+        
+        .delete-btn {
+            background: #e74c3c;
+            width: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .delete-btn:hover {
+            background: #c0392b;
+        }
+        
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            text-align: center;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+        
+        .stat-box {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+            min-width: 180px;
+            margin: 10px;
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #3498db;
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            color: #7f8c8d;
+            font-size: 0.95rem;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #95a5a6;
+        }
+        
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            opacity: 0.5;
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            color: #7f8c8d;
+            font-size: 0.9rem;
+        }
+        
+        .total-saved {
+            color: #27ae60;
+            font-weight: bold;
+        }
+        
+        .total-remaining {
+            color: #e74c3c;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1><i class="fas fa-piggy-bank"></i> Накопление на цели</h1>
+        <p class="subtitle">Отслеживайте свой прогресс в накоплении денег для достижения финансовых целей</p>
+    </header>
+    
+    <div class="container">
+        <div class="card">
+            <h2><i class="fas fa-plus-circle"></i> Добавить новую цель</h2>
+            <form id="goalForm">
+                <div class="form-group">
+                    <label for="goalName">Название цели</label>
+                    <input type="text" id="goalName" placeholder="Например: Новый ноутбук, отпуск, машина..." required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="targetAmount">Целевая сумма (₽)</label>
+                    <input type="number" id="targetAmount" min="1" placeholder="100000" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="savedAmount">Уже накоплено (₽)</label>
+                    <input type="number" id="savedAmount" min="0" placeholder="0" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="priority">Приоритет</label>
+                    <select id="priority">
+                        <option value="low">Низкий</option>
+                        <option value="medium" selected>Средний</option>
+                        <option value="high">Высокий</option>
+                    </select>
+                </div>
+                
+                <button type="submit" id="addGoalBtn">
+                    <i class="fas fa-plus"></i> Добавить цель
+                </button>
+            </form>
+        </div>
+        
+        <div class="card">
+            <h2><i class="fas fa-bullseye"></i> Мои цели</h2>
+            <div id="goalsList">
+                <!-- Цели будут добавляться сюда -->
+                <div class="empty-state" id="emptyState">
+                    <i class="fas fa-bullseye"></i>
+                    <h3>У вас пока нет целей</h3>
+                    <p>Добавьте свою первую цель, чтобы начать отслеживать прогресс накопления</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="stats">
+        <div class="stat-box">
+            <div class="stat-value" id="totalGoals">0</div>
+            <div class="stat-label">Всего целей</div>
+        </div>
+        
+        <div class="stat-box">
+            <div class="stat-value"><span class="total-saved" id="totalSaved">0 ₽</span></div>
+            <div class="stat-label">Всего накоплено</div>
+        </div>
+        
+        <div class="stat-box">
+            <div class="stat-value"><span class="total-remaining" id="totalRemaining">0 ₽</span></div>
+            <div class="stat-label">Осталось накопить</div>
+        </div>
+        
+        <div class="stat-box">
+            <div class="stat-value" id="completedGoals">0</div>
+            <div class="stat-label">Достигнуто целей</div>
+        </div>
+    </div>
+    
+    <footer>
+        <p>Трекер накопления денег для целей &copy; <span id="currentYear"></span> | Сохраняйте и достигайте своих финансовых целей!</p>
+    </footer>
+
+    <script>
+        // Установка текущего года в футере
+        document.getElementById('currentYear').textContent = new Date().getFullYear();
+        
+        // Загрузка целей из localStorage
+        let goals = JSON.parse(localStorage.getItem('savingsGoals')) || [];
+        
+        // Обновление статистики
+        function updateStats() {
+            const totalGoals = goals.length;
+            const totalSaved = goals.reduce((sum, goal) => sum + goal.saved, 0);
+            const totalTarget = goals.reduce((sum, goal) => sum + goal.target, 0);
+            const totalRemaining = totalTarget - totalSaved;
+            const completedGoals = goals.filter(goal => goal.saved >= goal.target).length;
+            
+            document.getElementById('totalGoals').textContent = totalGoals;
+            document.getElementById('totalSaved').textContent = `${totalSaved.toLocaleString()} ₽`;
+            document.getElementById('totalRemaining').textContent = `${totalRemaining.toLocaleString()} ₽`;
+            document.getElementById('completedGoals').textContent = completedGoals;
+        }
+        
+        // Отображение списка целей
+        function renderGoals() {
+            const goalsList = document.getElementById('goalsList');
+            const emptyState = document.getElementById('emptyState');
+            
+            if (goals.length === 0) {
+                goalsList.innerHTML = '';
+                goalsList.appendChild(emptyState);
+                emptyState.style.display = 'block';
+                return;
+            }
+            
+            emptyState.style.display = 'none';
+            
+            // Сортируем цели по приоритету
+            const priorityOrder = { high: 3, medium: 2, low: 1 };
+            const sortedGoals = [...goals].sort((a, b) => priorityOrder[b.priority] - priorityOrder[a.priority]);
+            
+            goalsList.innerHTML = '';
+            
+            sortedGoals.forEach((goal, index) => {
+                const percentage = Math.min(Math.round((goal.saved / goal.target) * 100), 100);
+                const progressColor = percentage >= 100 ? '#2ecc71' : 
+                                     percentage >= 50 ? '#3498db' : 
+                                     '#f39c12';
+                
+                const goalElement = document.createElement('div');
+                goalElement.className = 'goal-item';
+                goalElement.innerHTML = `
+                    <div class="goal-header">
+                        <div class="goal-title">${goal.name}</div>
+                        <div class="goal-amount">${goal.saved.toLocaleString()} ₽ / ${goal.target.toLocaleString()} ₽</div>
+                    </div>
+                    
+                    <div class="progress-container">
+                        <div class="progress-bar" style="width: ${percentage}%; background: ${progressColor}">
+                            ${percentage}%
+                        </div>
+                    </div>
+                    
+                    <div class="goal-info">
+                        <div>Приоритет: <span style="color: ${goal.priority === 'high' ? '#e74c3c' : goal.priority === 'medium' ? '#f39c12' : '#3498db'}">${getPriorityText(goal.priority)}</span></div>
+                        <div>Осталось: ${(goal.target - goal.saved).toLocaleString()} ₽</div>
+                    </div>
+                    
+                    <div class="actions">
+                        <button class="add-btn" onclick="addToGoal(${index})">
+                            <i class="fas fa-plus"></i> Добавить
+                        </button>
+                        <button class="update-btn" onclick="updateGoal(${index})">
+                            <i class="fas fa-edit"></i> Обновить
+                        </button>
+                        <button class="delete-btn" onclick="deleteGoal(${index})">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                `;
+                
+                goalsList.appendChild(goalElement);
+            });
+            
+            updateStats();
+            saveGoals();
+        }
+        
+        // Получение текста приоритета
+        function getPriorityText(priority) {
+            const priorityMap = {
+                'low': 'Низкий',
+                'medium': 'Средний',
+                'high': 'Высокий'
+            };
+            return priorityMap[priority] || 'Не указан';
+        }
+        
+        // Добавление новой цели
+        document.getElementById('goalForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const name = document.getElementById('goalName').value.trim();
+            const target = parseFloat(document.getElementById('targetAmount').value);
+            const saved = parseFloat(document.getElementById('savedAmount').value);
+            const priority = document.getElementById('priority').value;
+            
+            if (saved > target) {
+                alert('Накопленная сумма не может превышать целевую!');
+                return;
+            }
+            
+            goals.push({
+                name,
+                target,
+                saved,
+                priority
+            });
+            
+            // Очистка формы
+            document.getElementById('goalForm').reset();
+            document.getElementById('priority').value = 'medium';
+            
+            renderGoals();
+            
+            // Показ уведомления
+            showNotification(`Цель "${name}" успешно добавлена!`);
+        });
+        
+        // Добавление средств к цели
+        function addToGoal(index) {
+            const amount = prompt(`Сколько рублей вы хотите добавить к цели "${goals[index].name}"?`, "0");
+            const numAmount = parseFloat(amount);
+            
+            if (amount && !isNaN(numAmount) && numAmount > 0) {
+                goals[index].saved += numAmount;
+                
+                // Если накопленная сумма превысила целевую, ограничиваем её
+                if (goals[index].saved > goals[index].target) {
+                    goals[index].saved = goals[index].target;
+                }
+                
+                renderGoals();
+                showNotification(`Добавлено ${numAmount.toLocaleString()} ₽ к цели "${goals[index].name}"`);
+            }
+        }
+        
+        // Обновление цели
+        function updateGoal(index) {
+            const goal = goals[index];
+            
+            const newName = prompt('Новое название цели:', goal.name);
+            if (newName === null) return;
+            
+            const newTarget = prompt('Новая целевая сумма (₽):', goal.target);
+            if (newTarget === null) return;
+            
+            const newSaved = prompt('Уже накоплено (₽):', goal.saved);
+            if (newSaved === null) return;
+            
+            const numTarget = parseFloat(newTarget);
+            const numSaved = parseFloat(newSaved);
+            
+            if (numSaved > numTarget) {
+                alert('Накопленная сумма не может превышать целевую!');
+                return;
+            }
+            
+            goals[index].name = newName.trim();
+            goals[index].target = numTarget;
+            goals[index].saved = numSaved;
+            
+            renderGoals();
+            showNotification(`Цель "${goal.name}" обновлена`);
+        }
+        
+        // Удаление цели
+        function deleteGoal(index) {
+            const goalName = goals[index].name;
+            if (confirm(`Вы уверены, что хотите удалить цель "${goalName}"?`)) {
+                goals.splice(index, 1);
+                renderGoals();
+                showNotification(`Цель "${goalName}" удалена`);
+            }
+        }
+        
+        // Показать уведомление
+        function showNotification(message) {
+            // Создаем элемент уведомления
+            const notification = document.createElement('div');
+            notification.textContent = message;
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: #2ecc71;
+                color: white;
+                padding: 15px 20px;
+                border-radius: 8px;
+                box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+                z-index: 1000;
+                font-weight: 600;
+                animation: slideIn 0.3s ease;
+            `;
+            
+            document.body.appendChild(notification);
+            
+            // Удаляем уведомление через 3 секунды
+            setTimeout(() => {
+                notification.style.animation = 'slideOut 0.3s ease';
+                setTimeout(() => {
+                    document.body.removeChild(notification);
+                }, 300);
+            }, 3000);
+            
+            // Добавляем CSS анимации
+            if (!document.querySelector('#notification-styles')) {
+                const style = document.createElement('style');
+                style.id = 'notification-styles';
+                style.textContent = `
+                    @keyframes slideIn {
+                        from { transform: translateX(100%); opacity: 0; }
+                        to { transform: translateX(0); opacity: 1; }
+                    }
+                    @keyframes slideOut {
+                        from { transform: translateX(0); opacity: 1; }
+                        to { transform: translateX(100%); opacity: 0; }
+                    }
+                `;
+                document.head.appendChild(style);
+            }
+        }
+        
+        // Сохранение целей в localStorage
+        function saveGoals() {
+            localStorage.setItem('savingsGoals', JSON.stringify(goals));
+        }
+        
+        // Инициализация
+        document.addEventListener('DOMContentLoaded', function() {
+            renderGoals();
+            
+            // Добавляем несколько примеров целей, если список пуст
+            if (goals.length === 0) {
+                goals = [
+                    {
+                        name: "Новый ноутбук",
+                        target: 80000,
+                        saved: 25000,
+                        priority: "high"
+                    },
+                    {
+                        name: "Отпуск в Крыму",
+                        target: 60000,
+                        saved: 15000,
+                        priority: "medium"
+                    },
+                    {
+                        name: "Новый смартфон",
+                        target: 40000,
+                        saved: 12000,
+                        priority: "low"
+                    }
+                ];
+                renderGoals();
+            }
+        });
+    </script>
+</body>
+</html>
